@@ -1,5 +1,6 @@
 package com.amrita.menu.service.model;
 
+
 public class EmailDetails {
 	
 	private String recipient;

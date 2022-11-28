@@ -11,6 +11,7 @@ import com.amrita.menu.service.model.User;
 import com.amrita.menu.service.repository.UserRepository;
 
 
+
 @Service
 public class UserDetailsServiceImpl implements UserDetailsService {
   @Autowired

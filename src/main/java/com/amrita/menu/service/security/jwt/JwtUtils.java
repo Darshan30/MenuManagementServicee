@@ -17,6 +17,7 @@ import com.amrita.menu.service.security.services.UserDetailsImpl;
 
 import io.jsonwebtoken.*;
 
+
 @Component
 public class JwtUtils {
   private static final Logger logger = LoggerFactory.getLogger(JwtUtils.class);

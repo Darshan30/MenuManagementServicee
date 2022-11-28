@@ -2,6 +2,7 @@ package com.amrita.menu.service.model;
 
 import javax.validation.constraints.NotBlank;
 
+
 public class LoginRequest {
 	@NotBlank
 	private String username;

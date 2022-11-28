@@ -22,6 +22,7 @@ import com.amrita.menu.service.security.jwt.AuthTokenFilter;
 import com.amrita.menu.service.security.services.UserDetailsServiceImpl;
 
 
+
 @Configuration
 @EnableGlobalMethodSecurity(prePostEnabled = true)
 public class WebSecurityConfig { // extends WebSecurityConfigurerAdapter {

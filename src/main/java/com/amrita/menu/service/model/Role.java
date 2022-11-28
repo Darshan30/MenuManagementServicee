@@ -1,5 +1,6 @@
 package com.amrita.menu.service.model;
 
+
 import javax.persistence.*;
 
 @Entity

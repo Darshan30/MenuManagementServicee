@@ -2,6 +2,7 @@ package com.amrita.menu.service.model;
 
 import java.util.List;
 
+
 public class UserInfoResponse {
 	private Long id;
 	private String username;
