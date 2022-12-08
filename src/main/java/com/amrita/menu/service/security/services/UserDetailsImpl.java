@@ -24,15 +24,18 @@ public class UserDetailsImpl implements UserDetails {
 
   @JsonIgnore
   private String password;
+  
+  private String rollNo;
 
   private Collection<? extends GrantedAuthority> authorities;
 
-  public UserDetailsImpl(Long id, String username, String email, String password,
+  public UserDetailsImpl(Long id, String username, String email, String password,String rollNo,
       Collection<? extends GrantedAuthority> authorities) {
     this.id = id;
     this.username = username;
     this.email = email;
     this.password = password;
+    this.rollNo=rollNo;
     this.authorities = authorities;
   }
 
@@ -45,7 +48,7 @@ public class UserDetailsImpl implements UserDetails {
         user.getId(), 
         user.getUsername(), 
         user.getEmail(),
-        user.getPassword(), 
+        user.getPassword(),user.getRollNo(), 
         authorities);
   }
 
@@ -71,8 +74,18 @@ public class UserDetailsImpl implements UserDetails {
   public String getUsername() {
     return username;
   }
+  
+  
 
-  @Override
+  public String getRollNo() {
+	return rollNo;
+}
+
+public void setRollNo(String rollNo) {
+	this.rollNo = rollNo;
+}
+
+@Override
   public boolean isAccountNonExpired() {
     return true;
   }
