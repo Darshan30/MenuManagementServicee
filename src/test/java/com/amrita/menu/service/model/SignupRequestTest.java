@@ -1,13 +1,16 @@
 package com.amrita.menu.service.model;
 
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.util.HashSet;
 import java.util.Set;
 
 import org.junit.jupiter.api.Test;
+import org.springframework.boot.test.context.SpringBootTest;
 
-public class SignupRequestTest {
+@SpringBootTest
+ class SignupRequestTest {
 	
 	
 	SignupRequest sr=new SignupRequest();
@@ -17,7 +20,7 @@ public class SignupRequestTest {
 	{
 		sr.setRollNo("123432");
 		
-		assertTrue(sr.getRollNo().equals("123432"));
+		assertEquals("123432",sr.getRollNo());
 	}
 	
 	@Test
@@ -25,7 +28,7 @@ public class SignupRequestTest {
 	{
 		sr.setMobileNo("123432");
 		
-		assertTrue(sr.getMobileNo().equals("123432"));
+		assertEquals("123432",sr.getMobileNo());
 	}
 	
 	@Test
@@ -33,7 +36,7 @@ public class SignupRequestTest {
 	{
 		sr.setUsername("Darshan");
 		
-		assertTrue(sr.getUsername().equals("Darshan"));
+		assertEquals("Darshan",sr.getUsername());
 	}
 	
 	@Test
@@ -41,7 +44,7 @@ public class SignupRequestTest {
 	{
 		sr.setEmail("Darshan@gmail.com");
 		
-		assertTrue(sr.getEmail().equals("Darshan@gmail.com"));
+		assertEquals("Darshan@gmail.com",sr.getEmail());
 	}
 	
 	@Test
@@ -49,7 +52,7 @@ public class SignupRequestTest {
 	{
 		sr.setPassword("Darshan@gmail.com");
 		
-		assertTrue(sr.getPassword().equals("Darshan@gmail.com"));
+		assertEquals("Darshan@gmail.com",sr.getPassword());
 	}
 	
 	@Test
@@ -60,7 +63,7 @@ public class SignupRequestTest {
 		hs.add("ted");
 		sr.setRole(hs);
 		
-		assertTrue(sr.getRole().size()==1);
+		assertEquals(1,sr.getRole().size());
 	}
 	
 	

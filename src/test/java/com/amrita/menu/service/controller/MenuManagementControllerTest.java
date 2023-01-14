@@ -1,59 +1,45 @@
 package com.amrita.menu.service.controller;
 
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.junit.Assert.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.lenient;
-import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
-import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
-
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Optional;
-import java.util.Random;
 import java.util.Set;
 
-import org.aspectj.lang.annotation.Before;
+import javax.servlet.http.HttpServletResponse;
+
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
-import org.junit.runner.RunWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.Mockito;
-import org.mockito.junit.MockitoJUnitRunner;
 import org.mockito.junit.jupiter.MockitoExtension;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
-import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
-import org.springframework.boot.test.mock.mockito.MockBean;
-import org.springframework.http.MediaType;
-import org.springframework.http.ResponseCookie;
+import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.crypto.password.PasswordEncoder;
-import org.springframework.security.test.context.support.WithMockUser;
-import org.springframework.test.context.junit4.SpringRunner;
-import org.springframework.test.web.servlet.MockMvc;
-import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
-
 import com.amrita.menu.service.aggregator.EmailService;
+import com.amrita.menu.service.model.CanteenAllMenu;
 import com.amrita.menu.service.model.CanteenMenu;
 import com.amrita.menu.service.model.ERole;
 import com.amrita.menu.service.model.EmailDetails;
 import com.amrita.menu.service.model.EmailRequest;
+import com.amrita.menu.service.model.ITCanteenMenu;
 import com.amrita.menu.service.model.LoginRequest;
 import com.amrita.menu.service.model.MainCanteenMenu;
+import com.amrita.menu.service.model.MbaCanteenMenu;
+import com.amrita.menu.service.model.MessMenu;
 import com.amrita.menu.service.model.OtpRequest;
 import com.amrita.menu.service.model.Role;
 import com.amrita.menu.service.model.SignupRequest;
+import com.amrita.menu.service.model.UpdatePasswordRequest;
 import com.amrita.menu.service.model.User;
 import com.amrita.menu.service.repository.ITCanteenRepository;
 import com.amrita.menu.service.repository.MainCanteenRepository;
@@ -63,12 +49,14 @@ import com.amrita.menu.service.repository.RoleRepository;
 import com.amrita.menu.service.repository.UserRepository;
 import com.amrita.menu.service.security.jwt.JwtUtils;
 import com.amrita.menu.service.security.services.UserDetailsImpl;
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.ObjectMapper;
 
+import static org.junit.jupiter.api.Assertions.assertTrue;
+
+import static org.junit.jupiter.api.Assertions.assertNotNull;
 @ExtendWith(MockitoExtension.class)
 @AutoConfigureMockMvc(addFilters=false)
-public class MenuManagementControllerTest {
+@SpringBootTest
+ class MenuManagementControllerTest {
 	
 
 	@InjectMocks
@@ -126,13 +114,15 @@ public class MenuManagementControllerTest {
 	    
 	    when(authentication.getPrincipal()).thenReturn(ur);
 	    
-	    ResponseEntity<?> result=menuManagementController.authenticateUser(lr);
+	    HttpServletResponse response=null;
+	    
+	    ResponseEntity<?> result=menuManagementController.authenticateUser(lr,response);
 		
 	}
 	
 	
 	@Test
-	public void forgotUserPasswordTest() throws Exception
+	void forgotUserPasswordTest() throws Exception
 	{
 		
 		EmailRequest er=new EmailRequest();
@@ -164,7 +154,7 @@ public class MenuManagementControllerTest {
 	
 	
 	@Test
-	public void verifyUserOtpPositiveTest() throws Exception
+	 void verifyUserOtpPositiveTest() throws Exception
 	{
 		
 		OtpRequest or=new OtpRequest();
@@ -186,7 +176,7 @@ public class MenuManagementControllerTest {
 	}
 	
 	@Test
-	public void verifyUserOtpNegativeTest() throws Exception
+	 void verifyUserOtpNegativeTest() throws Exception
 	{
 		
 		OtpRequest or=new OtpRequest();
@@ -209,13 +199,13 @@ public class MenuManagementControllerTest {
 	
 	
 	@Test
-	public void getCanteenMenuOneTest() throws Exception
+	 void getCanteenMenuOneTest() throws Exception
 	{
 		
 		List<MainCanteenMenu> menu=new ArrayList<>();
 		
 		
-		menu.add(new MainCanteenMenu("gobi",10,10));
+		menu.add(new MainCanteenMenu("gobi",10,10,"specials","main_canteen"));
 		
 				
 		
@@ -237,7 +227,7 @@ public class MenuManagementControllerTest {
 		List<MainCanteenMenu> menu=new ArrayList<>();
 		
 		
-		menu.add(new MainCanteenMenu("gobi",10,10));
+		menu.add(new MainCanteenMenu("gobi",10,10,"specials","main_canteen"));
 		
 				
 		
@@ -253,13 +243,13 @@ public class MenuManagementControllerTest {
 	}
 	
 	@Test
-	public void getCanteenMenuThreeTest() throws Exception
+	 void getCanteenMenuThreeTest() throws Exception
 	{
 		
 		List<MainCanteenMenu> menu=new ArrayList<>();
 		
 		
-		menu.add(new MainCanteenMenu("gobi",10,10));
+		menu.add(new MainCanteenMenu("gobi",10,10,"specials","main_canteen"));
 		
 				
 		
@@ -275,13 +265,13 @@ public class MenuManagementControllerTest {
 	}
 	
 	@Test
-	public void getCanteenMenuFourTest() throws Exception
+	 void getCanteenMenuFourTest() throws Exception
 	{
 		
 		List<MainCanteenMenu> menu=new ArrayList<>();
 		
 		
-		menu.add(new MainCanteenMenu("gobi",10,10));
+		menu.add(new MainCanteenMenu("gobi",10,10,"specials","main_canteen"));
 		
 				
 		
@@ -298,7 +288,7 @@ public class MenuManagementControllerTest {
 	
 	
 	@Test
-	public void registerUserRollExistsTest() throws Exception
+	 void registerUserRollExistsTest() throws Exception
 	{
 		
 		SignupRequest srr=new SignupRequest();
@@ -338,7 +328,7 @@ public class MenuManagementControllerTest {
 	
 	
 	@Test
-	public void registerUserEmailExistsTest() throws Exception
+	 void registerUserEmailExistsTest() throws Exception
 	{
 		
 		SignupRequest srr=new SignupRequest();
@@ -378,7 +368,7 @@ public class MenuManagementControllerTest {
 	
 	
 	@Test
-	public void registerUserRoleNullTest() throws Exception
+	 void registerUserRoleNullTest() throws Exception
 	{
 		
 		SignupRequest srr=new SignupRequest();
@@ -411,7 +401,7 @@ public class MenuManagementControllerTest {
 	
 	
 	@Test
-	public void registerUserRoleTest() throws Exception
+	 void registerUserRoleTest() throws Exception
 	{
 		
 		SignupRequest srr=new SignupRequest();
@@ -459,6 +449,73 @@ public class MenuManagementControllerTest {
 	}
 	
 	
+	@Test
+	 void getAllCanteenMenuTest() throws Exception
+	{
+		
+		List<MainCanteenMenu> menu1=new ArrayList<>();
+		
+		
+		menu1.add(new MainCanteenMenu("gobi",10,10,"specials","main_canteen"));
+		
+		
+		List<MbaCanteenMenu> menu2=new ArrayList<>();
+		
+		
+		menu2.add(new MbaCanteenMenu("gobi",10,10,"specials","main_canteen"));
+		
+		List<ITCanteenMenu> menu3=new ArrayList<>();
+		
+		
+		menu3.add(new ITCanteenMenu("gobi",10,10,"specials","main_canteen"));
+		
+		
+		List<MessMenu> menu4=new ArrayList<>();
+		
+		
+		menu4.add(new MessMenu("gobi","Monday"));
+		
+		
+				
+		
+		lenient().when(mainCanteenRepository.findAll()).thenReturn(menu1);
+		
+		lenient().when(mbaCanteenRepository.findAll()).thenReturn(menu2);
+		
+		lenient().when(itCanteenRepository.findAll()).thenReturn(menu3);
+		
+		lenient().when(messRepository.findAll()).thenReturn(menu4);
+		        
+		CanteenAllMenu result=menuManagementController.getAllCanteenMenu();
+	    
+	    assertNotNull(result);
+		
+		
+		
+	}
+	
+	@Test
+	 void updatePasswordTest() throws Exception
+		{
+		
+		UpdatePasswordRequest ur=new UpdatePasswordRequest();
+		
+		ur.setEmailId("darshan@gmail.com");
+		ur.setUserPassword("2dagdajjjfme");
+			
+		User user = new User("darshahnsasads","dfsdfs23423sdsdf","darshan@gmail.com","99948","werwerwer234234","qweqweqweeqw");
+		
+	    when(userRepository.findByEmail(Mockito.anyString())).thenReturn(user);
+			        
+	    when(userRepository.save(user)).thenReturn(user);
+	    
+	    ResponseEntity<?> result=menuManagementController.updatePassword(ur);
+		    
+	    assertTrue(result.getStatusCode().is2xxSuccessful());
+			
+			
+			
+		}
 	
 
 }

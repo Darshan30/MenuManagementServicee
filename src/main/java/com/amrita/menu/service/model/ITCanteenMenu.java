@@ -21,6 +21,10 @@ public class ITCanteenMenu {
 	  
 	  private int itemQuantity;
 	  
+	  private String itemCategory;
+	  
+	  private String canteenName;
+	  
 	  
 	  
 
@@ -31,11 +35,43 @@ public class ITCanteenMenu {
 	
 	
 
-	public ITCanteenMenu(String itemName, int itemPrice, int itemQuantity) {
+	public ITCanteenMenu(String itemName, int itemPrice, int itemQuantity,String itemCategory,String canteenName) {
 		this.itemName = itemName;
 		this.itemPrice = itemPrice;
 		this.itemQuantity = itemQuantity;
+		this.itemCategory=itemCategory;
+		this.canteenName=canteenName;
 	}
+
+	
+
+
+
+	public String getItemCategory() {
+		return itemCategory;
+	}
+
+
+
+
+	public void setItemCategory(String itemCategory) {
+		this.itemCategory = itemCategory;
+	}
+
+
+
+
+	public String getCanteenName() {
+		return canteenName;
+	}
+
+
+
+
+	public void setCanteenName(String canteenName) {
+		this.canteenName = canteenName;
+	}
+
 
 
 

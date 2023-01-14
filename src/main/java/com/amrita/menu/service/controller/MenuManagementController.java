@@ -1,12 +1,16 @@
 package com.amrita.menu.service.controller;
 
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Random;
 import java.util.Set;
 import java.util.stream.Collectors;
 
+import javax.servlet.http.HttpServletResponse;
 import javax.validation.Valid;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -25,6 +29,7 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 import com.amrita.menu.service.repository.UserRepository;
+import com.amrita.menu.service.model.CanteenAllMenu;
 import com.amrita.menu.service.model.CanteenMenu;
 import com.amrita.menu.service.model.ERole;
 import com.amrita.menu.service.model.EmailDetails;
@@ -35,9 +40,13 @@ import com.amrita.menu.service.model.MainCanteenMenu;
 import com.amrita.menu.service.model.MbaCanteenMenu;
 import com.amrita.menu.service.model.MessMenu;
 import com.amrita.menu.service.model.MessageResponse;
+import com.amrita.menu.service.model.OrderList;
+import com.amrita.menu.service.model.OrderMenuList;
 import com.amrita.menu.service.model.OtpRequest;
 import com.amrita.menu.service.model.Role;
+import com.amrita.menu.service.model.SaveOrderRequest;
 import com.amrita.menu.service.model.SignupRequest;
+import com.amrita.menu.service.model.UpdatePasswordRequest;
 import com.amrita.menu.service.model.User;
 import com.amrita.menu.service.model.UserInfoResponse;
 import com.amrita.menu.service.repository.RoleRepository;
@@ -48,6 +57,8 @@ import com.amrita.menu.service.repository.ITCanteenRepository;
 import com.amrita.menu.service.repository.MainCanteenRepository;
 import com.amrita.menu.service.repository.MbaCanteenRepository;
 import com.amrita.menu.service.repository.MessRepository;
+import com.amrita.menu.service.repository.OrderRepository;
+import com.amrita.menu.service.repository.OrderMenuListRepository;
 import org.springframework.security.access.prepost.PreAuthorize;
 
 
@@ -83,9 +94,15 @@ public class MenuManagementController {
   
   @Autowired MessRepository messRepository;
   
+  @Autowired OrderRepository orderRepository;
+  
+  @Autowired OrderMenuListRepository orderMenuListRepository;
+  
+  
+  
 
   @PostMapping("/api/auth/signin")
-  public ResponseEntity<?> authenticateUser(@Valid @RequestBody LoginRequest loginRequest) {
+  public ResponseEntity<?> authenticateUser(@Valid @RequestBody LoginRequest loginRequest,HttpServletResponse response) {
 
     Authentication authentication = authenticationManager
         .authenticate(new UsernamePasswordAuthenticationToken(loginRequest.getUsername(), loginRequest.getPassword()));
@@ -94,17 +111,25 @@ public class MenuManagementController {
 
     UserDetailsImpl userDetails = (UserDetailsImpl) authentication.getPrincipal();
 
-    ResponseCookie jwtCookie = jwtUtils.generateJwtCookie(userDetails);
+    String jwtCookie = jwtUtils.generateJwtCookie(userDetails);
 
     List<String> roles = userDetails.getAuthorities().stream()
         .map(item -> item.getAuthority())
         .collect(Collectors.toList());
-
-    return ResponseEntity.ok().header(HttpHeaders.SET_COOKIE, jwtCookie.toString())
-        .body(new UserInfoResponse(userDetails.getId(),
-                                   userDetails.getUsername(),
-                                   userDetails.getEmail(),
-                                   roles));
+    
+    //response.addHeader("jwt_token",jwtCookie.toString());
+    
+//    return ResponseEntity.ok().header(HttpHeaders.SET_COOKIE, jwtCookie.toString())
+//        .body(new UserInfoResponse(userDetails.getId(),
+//                                   userDetails.getUsername(),
+//                                   userDetails.getEmail(),
+//                                   roles));
+    
+    return ResponseEntity.ok()
+            .body(new UserInfoResponse(userDetails.getId(),
+                                       userDetails.getUsername(),
+                                       userDetails.getEmail(),
+                                       roles,jwtCookie,userDetails.getRollNo()));
   }
   
   
@@ -115,8 +140,11 @@ public class MenuManagementController {
 	  Random r = new Random( System.currentTimeMillis() );
 	    int otp=10000 + r.nextInt(20000);
 	    
+	
+	    
 	    User updateUserOtp=userRepository.findByEmail(emailRequest.getEmailId());
 	    
+	    System.out.println("otp"+otp);
 	    
 	    updateUserOtp.setUserOtp(String.valueOf(otp));
 	    
@@ -146,6 +174,20 @@ public class MenuManagementController {
 	 }
 	 
 	 return ResponseEntity.badRequest().body(new MessageResponse("OTP mismatch"));
+  }
+  
+  
+  @PostMapping("/api/auth/updatePassword")
+  public ResponseEntity<?> updatePassword(@RequestBody UpdatePasswordRequest updatePasswordRequest) {
+	  
+	  
+	 User userDetails=userRepository.findByEmail(updatePasswordRequest.getEmailId());
+	 
+	 userDetails.setPassword(encoder.encode(updatePasswordRequest.getUserPassword()));
+	 
+	 userRepository.save(userDetails);
+	 
+	 return ResponseEntity.ok(new MessageResponse("Password Updated"));
   }
   
   
@@ -264,5 +306,130 @@ public class MenuManagementController {
 	  return null;
 
   }
+  
+  
+  @GetMapping("/api/auth/getAllCanteenMenu")
+  @PreAuthorize("hasRole('USER')")
+  public CanteenAllMenu getAllCanteenMenu()
+  {
+	  
+	  	
+	  	CanteenAllMenu canteenAllMenu = new CanteenAllMenu();
+	  
+		List<MainCanteenMenu> mainCanteenMenuList= mainCanteenRepository.findAll(); 
+	
+		List<MbaCanteenMenu> mbaCanteenMenuList= mbaCanteenRepository.findAll(); 
+
+		List<ITCanteenMenu> itCanteenMenuList= itCanteenRepository.findAll(); 
+
+		List<MessMenu> messMenuList= messRepository.findAll(); 
+		
+		
+		canteenAllMenu.setItCanteenMenuList(itCanteenMenuList);
+		canteenAllMenu.setMainCanteenMenuList(mainCanteenMenuList);
+		canteenAllMenu.setMbaCanteenMenuList(mbaCanteenMenuList);
+		canteenAllMenu.setMessMenuList(messMenuList);
+		
+		return canteenAllMenu;
+
+  }
+  
+  
+  @PostMapping("/api/auth/saveOrder")
+  @PreAuthorize("hasRole('USER')")
+  public void saveCustomerOrder(@RequestBody SaveOrderRequest saveOrderRequest) throws ParseException
+  {
+	  
+	  
+	  OrderList orderList=new OrderList();
+	  
+	  if(!orderRepository.existsByRollNo(saveOrderRequest.getRollNo()))
+	  {
+	  
+	  orderList.setRollNo(saveOrderRequest.getRollNo());
+	 
+	  List<OrderMenuList> orm=new ArrayList<>();
+	  
+	  
+	  for(OrderMenuList om : saveOrderRequest.getOrderList())
+	  {
+		  
+		  
+		  OrderMenuList nn=new OrderMenuList();
+		  
+		  nn.setCanteenName(om.getCanteenName());
+		  nn.setItemCategory(om.getItemCategory());
+		  nn.setItemName(om.getItemName());
+		  nn.setItemPrice(om.getItemPrice());
+		  nn.setItemQuantity(om.getItemQuantity());
+		  nn.setTotalCost(om.getTotalCost());
+		  nn.setCreationDateTime(new Date());
+		  
+		  orm.add(nn);
+		 
+	  }
+	  
+	  orderList.setSaveOrderList(orm);
+	  
+	  orderRepository.save(orderList);
+	  
+	  
+	  }
+	  
+	  else
+	  {
+		  OrderList lo=orderRepository.findByRollNo(saveOrderRequest.getRollNo());
+		  
+		  List<OrderMenuList> result=lo.getSaveOrderList();
+		  
+		  
+		  
+		  for(OrderMenuList om : saveOrderRequest.getOrderList())
+		  {
+			  
+			  
+			  OrderMenuList nnn=new OrderMenuList();
+			  
+			  nnn.setCanteenName(om.getCanteenName());
+			  nnn.setItemCategory(om.getItemCategory());
+			  nnn.setItemName(om.getItemName());
+			  nnn.setItemPrice(om.getItemPrice());
+			  nnn.setItemQuantity(om.getItemQuantity());
+			  nnn.setTotalCost(om.getTotalCost());
+			  nnn.setCreationDateTime(new Date());
+			  
+			  result.add(nnn);
+			 
+		  }
+		  
+		  lo.setSaveOrderList(result);
+		  
+		  orderRepository.save(lo);
+		  
+	  }
+	  
+
+
+  }
+  
+  
+
+  @GetMapping("/api/auth/getUserMenuHistory/{rollNo}")
+  @PreAuthorize("hasRole('USER')")
+  public OrderList getHistyMenu(@PathVariable String rollNo, HttpServletResponse httpServletResponse)
+  {
+	  
+	  OrderList lo=orderRepository.findByRollNo(rollNo);
+	  
+	  if(lo == null)
+	  {
+		  httpServletResponse.setStatus(HttpServletResponse.SC_BAD_REQUEST,"Invalid rollNo"); 
+		  
+	  }
+	  
+	  return lo;
+
+  }
+  
   
 }
